@@ -80,12 +80,19 @@ const AnimalCard: React.FC<AnimalCardProps> = ({ animal }) => {
             <DialogHeader>
               <DialogTitle>Támogatás</DialogTitle>
               <DialogDescription>
-                Munkánkat és védenceinket az alábbi számlaszámon támogathatja. Köszönjük!
+                Munkánkat és védenceinket az alábbi módokon támogathatja. Köszönjük!
               </DialogDescription>
             </DialogHeader>
-            <div className="py-4">
-              <p><strong>Név:</strong> PCAS Alapítvány</p>
-              <p><strong>Bankszámlaszám:</strong> 12345678-12345678-12345678</p>
+            <div className="py-4 space-y-4">
+              <div>
+                <h3 className="font-semibold">Banki átutalás</h3>
+                <p><strong>Kedvezményezett:</strong> PCAS Állatmentő Egyesület</p>
+                <p><strong>Számlaszám:</strong> 68800099-11083030-00000000</p>
+              </div>
+               <div>
+                <h3 className="font-semibold">PayPal</h3>
+                <p><strong>Email:</strong> petscare2000@gmail.com</p>
+              </div>
             </div>
           </DialogContent>
         </Dialog>

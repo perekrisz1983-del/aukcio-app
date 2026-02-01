@@ -161,8 +161,8 @@ const Navbar = () => {
               <Link to="/about" className="text-gray-600 hover:text-primary">
                 Rólunk
               </Link>
-              <Link to="/contact" className="text-gray-600 hover:text-primary">
-                Kapcsolat
+              <Link to="/support" className="text-gray-600 hover:text-primary">
+                Támogass minket
               </Link>
               {isAdmin && (
                 <Link to="/admin" className="text-gray-600 hover:text-primary">
@@ -189,8 +189,8 @@ const Navbar = () => {
           <Link to="/about" className="block hover:text-primary py-2" onClick={toggleMenu}>
             Rólunk
           </Link>
-          <Link to="/contact" className="block hover:text-primary py-2" onClick={toggleMenu}>
-            Kapcsolat
+          <Link to="/support" className="block hover:text-primary py-2" onClick={toggleMenu}>
+            Támogass minket
           </Link>
           {isAdmin && (
             <Link to="/admin" className="block hover:text-primary py-2" onClick={toggleMenu}>
