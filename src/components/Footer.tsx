@@ -6,7 +6,7 @@ import { Facebook, Youtube } from 'lucide-react';
 
 const Footer = () => {
   const socialLinks = {
-    facebook: 'https://www.facebook.com/pcas.slovakia',
+    facebook: 'https://www.facebook.com/pcas.allatmentes/#',
     youtube: 'https://www.youtube.com/user/pcasdogrescue21',
   };
 
