@@ -14,6 +14,7 @@ import AdoptionPage from "./pages/AdoptionPage";
 import AdminAnimals from "./pages/AdminAnimals";
 import About from "./pages/About";
 import Support from "./pages/Support";
+import Footer from "./components/Footer";
 
 const queryClient = new QueryClient();
 
@@ -23,9 +24,9 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <div>
+        <div className="flex flex-col min-h-screen">
           <Navbar />
-          <main>
+          <main className="flex-grow">
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auction" element={<AuctionPage />} />
@@ -39,6 +40,7 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
+          <Footer />
         </div>
       </BrowserRouter>
     </TooltipProvider>
