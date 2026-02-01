@@ -2,7 +2,7 @@ import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 // IMPORTANT: Replace this with your actual admin email address
-const ADMIN_EMAIL = 'admin@example.com';
+const ADMIN_EMAIL = 'perekrisz@freemail.hu';
 
 export default async (req, res) => {
   if (req.method !== 'POST') {
