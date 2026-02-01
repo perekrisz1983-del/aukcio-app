@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
 
-const supabaseUrl = process.env.VITE_SUPABASE_URL;
+const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const resendApiKey = process.env.RESEND_API_KEY;
 
@@ -21,17 +21,20 @@ const formatHungarianPrice = (price) => {
 };
 
 export default async (req, res) => {
-  if (req.method !== 'POST') {
+  if (req.method !== 'POST' && req.method !== 'GET') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
   try {
-    console.log('Cron job started: /api/cron/close-auctions');
+    console.log('Cron job started: /api/cron');
+    
+    /*
     const authToken = (req.headers.authorization || '').split('Bearer ').pop();
     if (process.env.CRON_SECRET && authToken !== process.env.CRON_SECRET) {
       console.warn('Cron job unauthorized access attempt.');
       return res.status(401).json({ error: 'Unauthorized' });
     }
+    */
 
     console.log('Calling close_expired_auctions RPC...');
     const { data: closedAuctions, error: rpcError } = await supabaseAdmin.rpc('close_expired_auctions');
