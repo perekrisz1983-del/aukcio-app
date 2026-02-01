@@ -26,11 +26,14 @@ export default async (req, res) => {
   }
 
   try {
+    console.log('Cron job started: /api/cron/close-auctions');
     const authToken = (req.headers.authorization || '').split('Bearer ').pop();
     if (process.env.CRON_SECRET && authToken !== process.env.CRON_SECRET) {
+      console.warn('Cron job unauthorized access attempt.');
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
+    console.log('Calling close_expired_auctions RPC...');
     const { data: closedAuctions, error: rpcError } = await supabaseAdmin.rpc('close_expired_auctions');
 
     if (rpcError) {
@@ -38,13 +41,20 @@ export default async (req, res) => {
       return res.status(500).json({ error: 'Failed to process auctions.', details: rpcError.message });
     }
 
+    console.log(`RPC call successful. Found ${closedAuctions ? closedAuctions.length : 0} auctions to process.`);
+
     if (!closedAuctions || closedAuctions.length === 0) {
+      console.log('No expired auctions to close.');
       return res.status(200).json({ message: 'No auctions to close.' });
     }
 
     const processingPromises = closedAuctions.map(async (auction) => {
-      if (!auction.winner_user_id) return;
+      if (!auction.winner_user_id) {
+        console.log(`Auction ${auction.human_readable_id} closed without a winner.`);
+        return;
+      }
 
+      console.log(`Processing winner for auction ${auction.human_readable_id}. Winner ID: ${auction.winner_user_id}`);
       const { data: userData, error: userError } = await supabaseAdmin.auth.admin.getUserById(auction.winner_user_id);
 
       if (userError || !userData.user?.email) {
@@ -53,6 +63,7 @@ export default async (req, res) => {
       }
 
       const winnerEmail = userData.user.email;
+      console.log(`Sending winner email to ${winnerEmail} for auction ${auction.human_readable_id}.`);
 
       try {
         await resend.emails.send({
@@ -68,6 +79,7 @@ export default async (req, res) => {
             <p>A PCAS Csapata</p>
           `,
         });
+        console.log(`Winner email sent successfully to ${winnerEmail}.`);
 
         const { error: updateError } = await supabaseAdmin
           .from('auctions')
@@ -76,6 +88,8 @@ export default async (req, res) => {
 
         if (updateError) {
           console.error(`Failed to update status for auction ${auction.human_readable_id} to 'Fizetésre vár'`, updateError);
+        } else {
+          console.log(`Successfully updated status for auction ${auction.human_readable_id} to 'Fizetésre vár'.`);
         }
       } catch (emailError) {
         console.error(`Failed to send winner email to ${winnerEmail} for auction ${auction.human_readable_id}`, emailError);
@@ -84,6 +98,7 @@ export default async (req, res) => {
 
     await Promise.all(processingPromises);
 
+    console.log(`Cron job finished. Successfully processed ${closedAuctions.length} auctions.`);
     return res.status(200).json({ message: `Successfully processed ${closedAuctions.length} auctions.` });
   } catch (error) {
     console.error('An unexpected error occurred in the cron job:', error);
