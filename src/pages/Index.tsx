@@ -68,7 +68,7 @@ const Index = () => {
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <CustomButton asChild className="px-6 py-2 rounded-lg">
-              <Link to="/auction">Örökbefogadás most</Link>
+              <Link to="/orokbefogadas">Örökbefogadás most</Link>
             </CustomButton>
             <CustomButton asChild variant="outline" className="px-8 py-3 text-lg font-semibold bg-white border-2 border-red-600 text-red-600 rounded-lg hover:bg-red-600 hover:text-white">
               <Link to="/support">Támogasd a munkánkat</Link>
@@ -140,7 +140,7 @@ const Index = () => {
                 <Link to="/auction">Aukciók megtekintése</Link>
               </CustomButton>
               <CustomButton asChild variant="outline" className="px-8 py-3 font-semibold bg-transparent border-2 border-white text-white rounded-lg hover:bg-white hover:text-primary text-base">
-                <Link to="/auction">Gazdikereső böngészése</Link>
+                <Link to="/orokbefogadas">Gazdikereső böngészése</Link>
               </CustomButton>
             </div>
           </div>
