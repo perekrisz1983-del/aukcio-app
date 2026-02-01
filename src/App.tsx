@@ -16,6 +16,8 @@ import About from "./pages/About";
 import Support from "./pages/Support";
 import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
+import SuccessStoriesPage from "./pages/SuccessStories";
+import FaqPage from "./pages/Faq";
 
 const queryClient = new QueryClient();
 
@@ -33,8 +35,10 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/auction" element={<AuctionPage />} />
               <Route path="/orokbefogadas" element={<AdoptionPage />} />
+              <Route path="/sikersztorik" element={<SuccessStoriesPage />} />
               <Route path="/about" element={<About />} />
               <Route path="/support" element={<Support />} />
+              <Route path="/gyik" element={<FaqPage />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/admin/animals" element={<AdminAnimals />} />
               <Route path="/profil" element={<Profil />} />

@@ -158,6 +158,9 @@ const Navbar = () => {
               <Link to="/orokbefogadas" className="text-gray-600 hover:text-primary">
                 Örökbefogadás
               </Link>
+              <Link to="/sikersztorik" className="text-gray-600 hover:text-primary">
+                Sikersztorik
+              </Link>
               <Link to="/about" className="text-gray-600 hover:text-primary">
                 Rólunk
               </Link>
@@ -185,6 +188,9 @@ const Navbar = () => {
           </Link>
           <Link to="/orokbefogadas" className="block hover:text-primary py-2" onClick={toggleMenu}>
             Örökbefogadás
+          </Link>
+          <Link to="/sikersztorik" className="block hover:text-primary py-2" onClick={toggleMenu}>
+            Sikersztorik
           </Link>
           <Link to="/about" className="block hover:text-primary py-2" onClick={toggleMenu}>
             Rólunk

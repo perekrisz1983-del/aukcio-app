@@ -7,7 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { CustomButton } from './CustomButton';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from './ui/dialog';
 import AdoptionFormModal from './AdoptionFormModal';
-import { ChevronLeft, ChevronRight, X, Gift } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface AnimalCardProps {
   animal: Animal;
@@ -72,44 +73,9 @@ const AnimalCard: React.FC<AnimalCardProps> = ({ animal }) => {
         <p className="text-muted-foreground text-sm">{animal.description}</p>
       </CardContent>
       <CardFooter className="p-4 bg-gray-50/50 grid grid-cols-2 gap-4">
-        <Dialog>
-          <DialogTrigger asChild>
-            <CustomButton variant="outline">Támogatni szeretném</CustomButton>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Támogatás</DialogTitle>
-              <DialogDescription>
-                Munkánkat és védenceinket az alábbi módokon támogathatja. Köszönjük!
-              </DialogDescription>
-            </DialogHeader>
-            <div className="py-4 space-y-4">
-               <div className="p-4 rounded-lg border bg-slate-50 text-center">
-                <h3 className="font-semibold flex items-center justify-center"><Gift className="mr-2 h-5 w-5 text-primary" /> Rendszeres támogatás</h3>
-                <p className="text-sm text-muted-foreground mt-1 mb-3">Állíts be ismétlődő utalást egyszerűen!</p>
-                <CustomButton asChild size="sm">
-                  <a href="https://adjukossze.hu/szervezet/pcas-pets-care-allatmento-es-kornyezetvedo-egyesulet-2783" target="_blank" rel="noopener noreferrer">
-                    Támogatás az Adjukössze.hu-n
-                  </a>
-                </CustomButton>
-              </div>
-              <div>
-                <h3 className="font-semibold">Banki átutalás</h3>
-                <p><strong>Kedvezményezett:</strong> PCAS Állatmentő Egyesület</p>
-                <p><strong>Számlaszám:</strong> 68800099-11083030-00000000</p>
-              </div>
-               <div>
-                <h3 className="font-semibold">PayPal</h3>
-                <p className="mb-2"><strong>Email:</strong> petscare2000@gmail.com</p>
-                <CustomButton asChild size="sm" variant="outline">
-                   <a href="https://www.paypal.com/donate/?business=petscare2000@gmail.com&no_recurring=0&currency_code=HUF" target="_blank" rel="noopener noreferrer">
-                    Direkt támogatás PayPal-lel
-                  </a>
-                </CustomButton>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <CustomButton asChild variant="outline">
+          <Link to="/support">Virtuális örökbefogadás</Link>
+        </CustomButton>
         <Dialog open={isAdoptionModalOpen} onOpenChange={setIsAdoptionModalOpen}>
           <DialogTrigger asChild>
             <CustomButton>Örökbefogadás</CustomButton>
