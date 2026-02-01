@@ -14,7 +14,7 @@ import { PlusCircle, Upload, X } from "lucide-react";
 import { Animal } from "../types";
 import { supabase } from "@/lib/supabase";
 import { v4 as uuidv4 } from 'uuid';
-import { showError } from "@/utils/toast";
+import { showError, showSuccess } from "@/utils/toast";
 
 export const animalFormSchema = z.object({
   name: z.string().min(2, "A névnek legalább 2 karakter hosszúnak kell lennie."),
@@ -22,7 +22,7 @@ export const animalFormSchema = z.object({
   gender: z.enum(['Kan', 'Szuka'], { required_error: "Kérjük, válassza ki a nemét." }),
   size: z.enum(['Kicsi', 'Közepes', 'Nagy'], { required_error: "Kérjük, válassza ki a méretét." }),
   age_category: z.enum(['Kölyök (0-1 év)', 'Felnőtt (1-8 év)', 'Idős (8+ év)'], { required_error: "Kérjük, válassza ki a korosztályt." }),
-  image_url: z.string().min(1, "Kép feltöltése kötelező."),
+  images: z.array(z.string()).min(1, "Legalább egy kép feltöltése kötelező."),
 });
 
 interface AnimalFormProps {
@@ -38,43 +38,68 @@ export const AnimalForm: React.FC<AnimalFormProps> = ({ onSave, editingAnimal, o
   const form = useForm<z.infer<typeof animalFormSchema>>({
     resolver: zodResolver(animalFormSchema),
     defaultValues: {
-      name: "", description: "", gender: undefined, size: undefined, age_category: undefined, image_url: "",
+      name: "", description: "", gender: undefined, size: undefined, age_category: undefined, images: [],
     },
   });
 
   useEffect(() => {
     if (editingAnimal) {
-      form.reset(editingAnimal);
+      form.reset({
+        ...editingAnimal,
+        images: editingAnimal.images || [],
+      });
     } else {
       form.reset({
-        name: "", description: "", gender: undefined, size: undefined, age_category: undefined, image_url: "",
+        name: "", description: "", gender: undefined, size: undefined, age_category: undefined, images: [],
       });
     }
   }, [editingAnimal, form]);
 
-  const imageUrl = form.watch("image_url");
+  const images = form.watch("images");
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
 
     setIsUploading(true);
-    const fileName = `${uuidv4()}-${file.name}`;
-    const { error } = await supabase.storage.from('animal-images').upload(fileName, file);
+    const currentImages = form.getValues("images");
+    const uploadPromises = Array.from(files).map(async (file) => {
+      const fileName = `${uuidv4()}-${file.name}`;
+      const { error } = await supabase.storage.from('animal-images').upload(fileName, file);
+      if (error) {
+        throw new Error(`Képfeltöltési hiba: ${error.message}`);
+      }
+      const { data } = supabase.storage.from('animal-images').getPublicUrl(fileName);
+      return data.publicUrl;
+    });
 
-    if (error) {
-      showError(`Képfeltöltési hiba: ${error.message}`);
+    try {
+      const newImageUrls = await Promise.all(uploadPromises);
+      form.setValue("images", [...currentImages, ...newImageUrls], { shouldValidate: true });
+      showSuccess(`${files.length} kép sikeresen feltöltve!`);
+    } catch (error: any) {
+      showError(error.message);
+    } finally {
       setIsUploading(false);
-      return;
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
-
-    const { data } = supabase.storage.from('animal-images').getPublicUrl(fileName);
-    form.setValue("image_url", data.publicUrl, { shouldValidate: true });
-    setIsUploading(false);
   };
 
-  const handleRemoveImage = () => {
-    form.setValue("image_url", "", { shouldValidate: true });
+  const handleRemoveImage = async (indexToRemove: number) => {
+    const currentImages = form.getValues("images");
+    const imageUrlToRemove = currentImages[indexToRemove];
+    const fileName = imageUrlToRemove.split('/').pop();
+
+    if (fileName) {
+      const { error } = await supabase.storage.from('animal-images').remove([fileName]);
+      if (error) {
+        showError(`Hiba a kép törlésekor a tárhelyről: ${error.message}`);
+      }
+    }
+
+    form.setValue("images", currentImages.filter((_, index) => index !== indexToRemove), { shouldValidate: true });
   };
 
   return (
@@ -138,22 +163,26 @@ export const AnimalForm: React.FC<AnimalFormProps> = ({ onSave, editingAnimal, o
                 </FormItem>
               )} />
             </div>
-            <FormField control={form.control} name="image_url" render={() => (
+            <FormField control={form.control} name="images" render={() => (
               <FormItem>
-                <FormLabel>Kép feltöltése</FormLabel>
+                <FormLabel>Képek feltöltése</FormLabel>
                 <FormControl>
                   <div>
-                    <Input type="file" accept="image/png, image/jpeg, image/webp" className="hidden" ref={fileInputRef} onChange={handleImageUpload} disabled={isUploading} />
+                    <Input type="file" accept="image/png, image/jpeg, image/webp" className="hidden" ref={fileInputRef} onChange={handleImageUpload} disabled={isUploading} multiple />
                     <CustomButton type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
-                      <Upload className="mr-2 h-4 w-4" /> {isUploading ? 'Feltöltés...' : 'Kép kiválasztása'}
+                      <Upload className="mr-2 h-4 w-4" /> {isUploading ? 'Feltöltés...' : 'Képek kiválasztása'}
                     </CustomButton>
                   </div>
                 </FormControl>
                 <FormMessage />
-                {imageUrl && (
-                  <div className="mt-4 relative h-40 w-40 rounded-lg border p-1">
-                    <img src={imageUrl} alt="Előnézet" className="object-contain w-full h-full" />
-                    <CustomButton type="button" variant="destructive" size="icon" className="absolute -top-2 -right-2 h-6 w-6 rounded-full" onClick={handleRemoveImage}><X className="h-4 w-4" /></CustomButton>
+                {images && images.length > 0 && (
+                  <div className="mt-4 flex flex-wrap gap-4">
+                    {images.map((url, index) => (
+                      <div key={index} className="relative h-32 w-32 rounded-lg border p-1">
+                        <img src={url} alt={`Előnézet ${index + 1}`} className="object-contain w-full h-full" />
+                        <CustomButton type="button" variant="destructive" size="icon" className="absolute -top-2 -right-2 h-6 w-6 rounded-full" onClick={() => handleRemoveImage(index)}><X className="h-4 w-4" /></CustomButton>
+                      </div>
+                    ))}
                   </div>
                 )}
               </FormItem>

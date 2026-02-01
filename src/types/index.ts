@@ -44,7 +44,7 @@ export interface Animal {
   gender: 'Kan' | 'Szuka';
   size: 'Kicsi' | 'Közepes' | 'Nagy';
   age_category: 'Kölyök (0-1 év)' | 'Felnőtt (1-8 év)' | 'Idős (8+ év)';
-  image_url: string;
+  images: string[];
   status: AnimalStatus;
   created_at: string;
 }

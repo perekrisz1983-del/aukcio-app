@@ -5,8 +5,9 @@ import { Animal } from '@/types';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CustomButton } from './CustomButton';
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from './ui/dialog';
 import AdoptionFormModal from './AdoptionFormModal';
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 
 interface AnimalCardProps {
   animal: Animal;
@@ -14,13 +15,50 @@ interface AnimalCardProps {
 
 const AnimalCard: React.FC<AnimalCardProps> = ({ animal }) => {
   const [isAdoptionModalOpen, setIsAdoptionModalOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  const hasImages = animal.images && animal.images.length > 0;
+  const hasMultipleImages = hasImages && animal.images.length > 1;
+
+  const nextImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCurrentImageIndex((prev) => (prev + 1) % animal.images.length);
+  };
+  const prevImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCurrentImageIndex((prev) => (prev - 1 + animal.images.length) % animal.images.length);
+  };
 
   return (
     <Card className="flex flex-col overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105">
       <CardHeader className="p-0">
-        <div className="aspect-w-16 aspect-h-9">
-          <img src={animal.image_url} alt={animal.name} className="object-cover w-full h-48" />
-        </div>
+        <Dialog onOpenChange={(isOpen) => !isOpen && setCurrentImageIndex(0)}>
+          <DialogTrigger asChild>
+            <div className="aspect-w-16 aspect-h-9 cursor-pointer">
+              {hasImages ? (
+                <img src={animal.images[0]} alt={animal.name} className="object-cover w-full h-48" />
+              ) : (
+                <div className="object-cover w-full h-48 bg-gray-200 flex items-center justify-center text-gray-500">Nincs kép</div>
+              )}
+            </div>
+          </DialogTrigger>
+          {hasImages && (
+            <DialogContent className="max-w-5xl w-full p-2 bg-transparent border-0 flex justify-center items-center">
+              <div className="relative">
+                <img src={animal.images[currentImageIndex]} alt={`${animal.name} - ${currentImageIndex + 1}`} className="max-h-[90vh] w-auto object-contain rounded-lg" />
+                <DialogClose asChild>
+                  <CustomButton variant="ghost" size="icon" className="absolute top-2 right-2 h-9 w-9 rounded-full bg-black/50 text-white hover:bg-black/70 z-50"><X className="h-5 w-5" /></CustomButton>
+                </DialogClose>
+                {hasMultipleImages && (
+                  <>
+                    <CustomButton variant="outline" size="icon" className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full h-10 w-10 bg-black/30 hover:bg-black/50 text-white" onClick={prevImage}><ChevronLeft /></CustomButton>
+                    <CustomButton variant="outline" size="icon" className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full h-10 w-10 bg-black/30 hover:bg-black/50 text-white" onClick={nextImage}><ChevronRight /></CustomButton>
+                  </>
+                )}
+              </div>
+            </DialogContent>
+          )}
+        </Dialog>
       </CardHeader>
       <CardContent className="p-4 flex-grow">
         <CardTitle className="text-2xl font-bold mb-2">{animal.name}</CardTitle>
@@ -42,7 +80,7 @@ const AnimalCard: React.FC<AnimalCardProps> = ({ animal }) => {
               <DialogDescription>
                 Munkánkat és védenceinket az alábbi számlaszámon támogathatja. Köszönjük!
               </DialogDescription>
-            </DialogHeader>
+            </Header>
             <div className="py-4">
               <p><strong>Név:</strong> PCAS Alapítvány</p>
               <p><strong>Bankszámlaszám:</strong> 12345678-12345678-12345678</p>
