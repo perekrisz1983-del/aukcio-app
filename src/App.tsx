@@ -12,6 +12,7 @@ import Profil from "./pages/Profil";
 import AuthPage from "./pages/Auth";
 import AdoptionPage from "./pages/AdoptionPage";
 import AdminAnimals from "./pages/AdminAnimals";
+import About from "./pages/About";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/auction" element={<AuctionPage />} />
               <Route path="/orokbefogadas" element={<AdoptionPage />} />
+              <Route path="/about" element={<About />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/admin/animals" element={<AdminAnimals />} />
               <Route path="/profil" element={<Profil />} />
