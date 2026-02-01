@@ -47,7 +47,7 @@ const Support = () => {
             </CardHeader>
             <CardContent className="space-y-4 text-center">
               <p className="text-lg text-gray-800">
-                Egyszerű és rendszeres támogatás az Adjukössze.hu-n keresztül.
+                Egyszeri és rendszeres támogatás az Adjukössze.hu-n keresztül.
               </p>
               <CustomButton asChild className="w-full sm:w-auto">
                 <a href={bankDetails.adjukosszeUrl} target="_blank" rel="noopener noreferrer">
