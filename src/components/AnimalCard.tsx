@@ -22,10 +22,12 @@ const AnimalCard: React.FC<AnimalCardProps> = ({ animal }) => {
 
   const nextImage = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (!animal.images) return;
     setCurrentImageIndex((prev) => (prev + 1) % animal.images.length);
   };
   const prevImage = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (!animal.images) return;
     setCurrentImageIndex((prev) => (prev - 1 + animal.images.length) % animal.images.length);
   };
 
@@ -80,7 +82,7 @@ const AnimalCard: React.FC<AnimalCardProps> = ({ animal }) => {
               <DialogDescription>
                 Munkánkat és védenceinket az alábbi számlaszámon támogathatja. Köszönjük!
               </DialogDescription>
-            </Header>
+            </DialogHeader>
             <div className="py-4">
               <p><strong>Név:</strong> PCAS Alapítvány</p>
               <p><strong>Bankszámlaszám:</strong> 12345678-12345678-12345678</p>
