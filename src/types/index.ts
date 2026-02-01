@@ -34,3 +34,17 @@ export interface Profile {
   id: string;
   role: string;
 }
+
+export type AnimalStatus = 'Gazdira vár' | 'Lefoglalva' | 'Gazdára talált';
+
+export interface Animal {
+  id: string;
+  name: string;
+  description: string;
+  gender: 'Kan' | 'Szuka';
+  size: 'Kicsi' | 'Közepes' | 'Nagy';
+  age_category: 'Kölyök (0-1 év)' | 'Felnőtt (1-8 év)' | 'Idős (8+ év)';
+  image_url: string;
+  status: AnimalStatus;
+  created_at: string;
+}

@@ -10,6 +10,8 @@ import AuctionPage from "./pages/Auction";
 import Admin from "./pages/Admin";
 import Profil from "./pages/Profil";
 import AuthPage from "./pages/Auth";
+import AdoptionPage from "./pages/AdoptionPage";
+import AdminAnimals from "./pages/AdminAnimals";
 
 const queryClient = new QueryClient();
 
@@ -25,7 +27,9 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auction" element={<AuctionPage />} />
+              <Route path="/orokbefogadas" element={<AdoptionPage />} />
               <Route path="/admin" element={<Admin />} />
+              <Route path="/admin/animals" element={<AdminAnimals />} />
               <Route path="/profil" element={<Profil />} />
               <Route path="/auth" element={<AuthPage />} />
               <Route path="*" element={<NotFound />} />

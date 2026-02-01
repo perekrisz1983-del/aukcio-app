@@ -155,6 +155,9 @@ const Navbar = () => {
               <Link to="/auction" className="text-gray-600 hover:text-primary">
                 Aukciók
               </Link>
+              <Link to="/orokbefogadas" className="text-gray-600 hover:text-primary">
+                Örökbefogadás
+              </Link>
               <Link to="/about" className="text-gray-600 hover:text-primary">
                 Rólunk
               </Link>
@@ -179,6 +182,9 @@ const Navbar = () => {
           </Link>
           <Link to="/auction" className="block hover:text-primary py-2" onClick={toggleMenu}>
             Aukciók
+          </Link>
+          <Link to="/orokbefogadas" className="block hover:text-primary py-2" onClick={toggleMenu}>
+            Örökbefogadás
           </Link>
           <Link to="/about" className="block hover:text-primary py-2" onClick={toggleMenu}>
             Rólunk

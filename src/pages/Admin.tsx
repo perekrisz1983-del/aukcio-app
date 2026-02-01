@@ -9,6 +9,8 @@ import { supabase } from "@/lib/supabase";
 import { Auction, AuctionStatus } from "../types";
 import { z } from "zod";
 import { User } from "@supabase/supabase-js";
+import { CustomButton } from "@/components/CustomButton";
+import { PawPrint } from "lucide-react";
 
 const Admin = () => {
   const [auctions, setAuctions] = useState<Auction[]>([]);
@@ -218,7 +220,12 @@ const Admin = () => {
 
   return (
     <div className="container mx-auto p-4 md:p-8">
-      <h1 className="text-4xl font-bold text-primary mb-8">Adminisztrációs felület</h1>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-4xl font-bold text-primary">Adminisztráció: Aukciók</h1>
+        <CustomButton onClick={() => navigate('/admin/animals')}>
+          <PawPrint className="mr-2 h-4 w-4" /> Állatok kezelése
+        </CustomButton>
+      </div>
       
       <div ref={formRef}>
         <AuctionForm 
