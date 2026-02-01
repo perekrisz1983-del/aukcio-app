@@ -20,8 +20,8 @@ const About = () => {
             <div className="flex flex-col md:flex-row gap-8 items-start">
               <div className="md:w-1/3 flex-shrink-0">
                 <img
-                  src="https://images.pexels.com/photos/4587971/pexels-photo-4587971.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
-                  alt="Vidra Betty (placeholder)"
+                  src="https://lnhuhshrgudtyfslitcf.supabase.co/storage/v1/object/public/animal-images/betty.png"
+                  alt="Vidra Betty, a PCAS alapítója"
                   className="rounded-xl shadow-md w-full h-auto object-cover"
                 />
               </div>
@@ -31,7 +31,7 @@ const About = () => {
                   Vidra Betty vagyok a PCAS Állatmentő Egyesület alapítója és vezetője. Sokak szerint megszállott. Igazuk van! Nem vagyok képes belenyugodni, hogy élőlények, akik itt élnek velünk a Föld bolygón, és akiket mi szelídítettünk magunkhoz valamikor, most ennyit, és ilyen kegyetlenül szenvedjenek.
                 </p>
                 <p>
-                  A PCAS nem állatvédő, hanem állatmentő szervezetként jött létre. Sokan nem tudják, mi a különbség a két tevékenység között. Az állatmentő feladatainak fókuszában a mentés áll, ezért a tevékenységben a mentés minden esetben jelen van. Ezért sokkal kevesebb idő és energia marad az oktatásra, az emberek hozzáállásának a befolyásolására a témával kapcsolatban.
+                  A PCAS nem állatvédő, hanem állatmentő szervezetként jött létre. Sokan nem tudják, mi a különféleség a két tevékenység között. Az állatmentő feladatainak fókuszában a mentés áll, ezért a tevékenységben a mentés minden esetben jelen van. Ezért sokkal kevesebb idő és energia marad az oktatásra, az emberek hozzáállásának a befolyásolására a témával kapcsolatban.
                 </p>
               </div>
             </div>
