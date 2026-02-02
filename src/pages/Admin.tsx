@@ -221,11 +221,15 @@ const Admin = () => {
 
   const filteredAuctions = useMemo(() => {
     if (filter === 'all') return auctions;
+
+    if (filter === 'fizetesre-var') {
+      return auctions.filter(auction => auction.status === 'Fizetésre vár' || auction.status === 'payment_pending');
+    }
+
     const filterMap: { [key: string]: AuctionStatus } = {
       'tervezett': 'Tervezett',
       'aktív': 'Aktív',
       'lejárt': 'Lejárt',
-      'fizetesre-var': 'Fizetésre vár',
       'fizetve-postazasra-var': 'Fizetve / Postázásra vár',
       'postazva': 'Postázva',
       'lezart-teljesult': 'Lezárt / Teljesült'

@@ -49,6 +49,8 @@ const StatusActions = ({ auction, onStatusChange, onReactivate }: { auction: Auc
     setTrackingNumber("");
   };
 
+  const isPendingPayment = auction.status === 'Fizetésre vár' || auction.status === 'payment_pending';
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -62,7 +64,7 @@ const StatusActions = ({ auction, onStatusChange, onReactivate }: { auction: Auc
             <Mail className="mr-2 h-4 w-4" /> Nyertes értesítése
           </DropdownMenuItem>
         )}
-        {auction.status === 'Fizetésre vár' && (
+        {isPendingPayment && (
           <>
             <DropdownMenuItem onClick={() => onStatusChange(auction.id, 'Fizetve / Postázásra vár')}>
               <CheckCircle className="mr-2 h-4 w-4" /> Fizetés beérkezett
@@ -120,8 +122,11 @@ const StatusActions = ({ auction, onStatusChange, onReactivate }: { auction: Auc
 };
 
 export const AuctionList: React.FC<AuctionListProps> = ({ auctions, filter, setFilter, onEdit, onDelete, onStatusChange, onReactivate }) => {
-  const getStatusBadge = (status: AuctionStatus) => {
-    const variants: { [key in AuctionStatus]: string } = {
+  const getStatusBadge = (status: AuctionStatus | string) => {
+    const isPending = status === 'Fizetésre vár' || status === 'payment_pending';
+    const statusText = isPending ? 'Fizetésre vár' : status;
+    
+    const variants: { [key: string]: string } = {
       'Aktív': 'bg-green-500 text-white',
       'Tervezett': 'bg-gray-400 text-white',
       'Lejárt': 'bg-red-600 text-white',
@@ -130,7 +135,8 @@ export const AuctionList: React.FC<AuctionListProps> = ({ auctions, filter, setF
       'Postázva': 'bg-purple-500 text-white',
       'Lezárt / Teljesült': 'bg-gray-800 text-white',
     };
-    return <Badge variant="default" className={variants[status] || 'bg-gray-500'}>{status}</Badge>;
+    
+    return <Badge variant="default" className={variants[statusText] || 'bg-gray-500'}>{statusText}</Badge>;
   };
 
   return (
