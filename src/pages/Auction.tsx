@@ -121,16 +121,16 @@ const AuctionCard = ({ item, onBid, currentUser }: { item: Auction; onBid: (item
       
       {isEffectivelyClosed ? (
         <div className="mt-auto">
-          {item.status === 'Fizetésre vár' ? (
-            <div className="text-center p-4 border-2 border-yellow-500 rounded-lg bg-yellow-50 text-yellow-700 font-bold">
-              FIZETÉSRE VÁR
+          {item.winner_id ? (
+            <div className="text-center p-4 border-2 border-blue-500 rounded-lg bg-blue-50 text-blue-700 font-bold">
+              ELKELT
             </div>
           ) : (
-            <div className="text-center p-4 border-2 border-red-500 rounded-lg bg-red-50 text-red-700 font-bold">
-              AZ AUKCIÓ LEZÁRULT
+            <div className="text-center p-4 border-2 border-gray-500 rounded-lg bg-gray-50 text-gray-700 font-bold">
+              LEZÁRULT
             </div>
           )}
-          {item.highest_bidder_id ? (
+          {item.winner_id ? (
             <div className="text-center mt-4">
               <p>Nyertes: <span className="font-semibold">{highestBidderEmail ? maskEmail(highestBidderEmail) : 'Betöltés...'}</span></p>
               <p>Nyertes licit: <span className="font-semibold">{formatHungarianPrice(item.current_bid)}</span></p>
@@ -201,7 +201,7 @@ const AuctionPage = () => {
     const { data, error } = await supabase
       .from('auctions')
       .select('*')
-      .in('status', ['Aktív', 'Fizetésre vár', 'Lejárt'])
+      .in('status', ['Aktív', 'Lejárt', 'Fizetésre vár', 'Fizetve / Postázásra vár', 'Postázva', 'Lezárt / Teljesült'])
       .order('end_time', { ascending: true });
     
     if (error) {
