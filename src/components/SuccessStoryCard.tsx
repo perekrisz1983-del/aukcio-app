@@ -1,28 +1,63 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Animal } from '@/types';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Dialog, DialogTrigger, DialogContent, DialogClose } from './ui/dialog';
+import { CustomButton } from './CustomButton';
 
 interface SuccessStoryCardProps {
   animal: Animal;
 }
 
 const SuccessStoryCard: React.FC<SuccessStoryCardProps> = ({ animal }) => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const hasImages = animal.images && animal.images.length > 0;
+  const hasMultipleImages = hasImages && animal.images.length > 1;
+
+  const nextImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!animal.images) return;
+    setCurrentImageIndex((prev) => (prev + 1) % animal.images.length);
+  };
+  const prevImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!animal.images) return;
+    setCurrentImageIndex((prev) => (prev - 1 + animal.images.length) % animal.images.length);
+  };
 
   return (
     <Card className="flex flex-col overflow-hidden rounded-lg shadow-lg transition-transform hover:scale-105">
       <CardHeader className="p-0 relative">
-        <div className="aspect-w-16 aspect-h-9">
-          {hasImages ? (
-            <img src={animal.images[0]} alt={animal.name} className="object-cover w-full h-48" />
-          ) : (
-            <div className="object-cover w-full h-48 bg-gray-200 flex items-center justify-center text-gray-500">Nincs kép</div>
+        <Dialog onOpenChange={(isOpen) => !isOpen && setCurrentImageIndex(0)}>
+          <DialogTrigger asChild>
+            <div className="aspect-w-16 aspect-h-9 cursor-pointer">
+              {hasImages ? (
+                <img src={animal.images[0]} alt={animal.name} className="object-cover w-full h-48" />
+              ) : (
+                <div className="object-cover w-full h-48 bg-gray-200 flex items-center justify-center text-gray-500">Nincs kép</div>
+              )}
+            </div>
+          </DialogTrigger>
+          {hasImages && (
+            <DialogContent className="max-w-5xl w-full p-2 bg-transparent border-0 flex justify-center items-center">
+              <div className="relative">
+                <img src={animal.images[currentImageIndex]} alt={`${animal.name} - ${currentImageIndex + 1}`} className="max-h-[90vh] w-auto object-contain rounded-lg" />
+                <DialogClose asChild>
+                  <CustomButton variant="ghost" size="icon" className="absolute top-2 right-2 h-9 w-9 rounded-full bg-black/50 text-white hover:bg-black/70 z-50"><X className="h-5 w-5" /></CustomButton>
+                </DialogClose>
+                {hasMultipleImages && (
+                  <>
+                    <CustomButton variant="outline" size="icon" className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full h-10 w-10 bg-black/30 hover:bg-black/50 text-white" onClick={prevImage}><ChevronLeft /></CustomButton>
+                    <CustomButton variant="outline" size="icon" className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full h-10 w-10 bg-black/30 hover:bg-black/50 text-white" onClick={nextImage}><ChevronRight /></CustomButton>
+                  </>
+                )}
+              </div>
+            </DialogContent>
           )}
-        </div>
+        </Dialog>
         <Badge className="absolute top-2 right-2 bg-green-600 text-white text-sm py-1 px-3">
           <CheckCircle2 className="h-4 w-4 mr-2" />
           Gazdára talált!

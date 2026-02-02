@@ -74,7 +74,7 @@ const AnimalCard: React.FC<AnimalCardProps> = ({ animal }) => {
       </CardContent>
       <CardFooter className="p-4 bg-gray-50/50 grid grid-cols-2 gap-4">
         <CustomButton asChild variant="outline">
-          <Link to="/support">Virtuális örökbefogadás</Link>
+          <Link to="/support">Támogatás</Link>
         </CustomButton>
         <Dialog open={isAdoptionModalOpen} onOpenChange={setIsAdoptionModalOpen}>
           <DialogTrigger asChild>
