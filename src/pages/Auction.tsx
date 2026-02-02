@@ -23,6 +23,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 const formatHungarianPrice = (price: number) => {
   return new Intl.NumberFormat("hu-HU", {
@@ -199,12 +201,13 @@ const AuctionPage = () => {
   const [auctionItems, setAuctionItems] = useState<Auction[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [showClosedAuctions, setShowClosedAuctions] = useState(false);
 
   const fetchAuctions = useCallback(async () => {
     const { data, error } = await supabase
       .from('auctions')
       .select('*')
-      .in('status', ['Aktív', 'Fizetésre vár', 'Lejárt']) // Fetch active and recently closed auctions
+      .in('status', ['Aktív', 'Fizetésre vár', 'Lejárt'])
       .order('end_time', { ascending: true });
     
     if (error) {
@@ -256,10 +259,22 @@ const AuctionPage = () => {
     }
   };
 
-  const filteredAuctions = useMemo(() => {
-    if (selectedCategory === 'all') return auctionItems;
-    return auctionItems.filter(item => item.category === selectedCategory);
-  }, [auctionItems, selectedCategory]);
+  const displayedAuctions = useMemo(() => {
+    const categoryFiltered = selectedCategory === 'all'
+      ? auctionItems
+      : auctionItems.filter(item => item.category === selectedCategory);
+
+    const active = categoryFiltered.filter(item => item.status === 'Aktív');
+    const closed = categoryFiltered.filter(item => item.status !== 'Aktív');
+
+    active.sort((a, b) => new Date(a.end_time).getTime() - new Date(b.end_time).getTime());
+    closed.sort((a, b) => new Date(b.end_time).getTime() - new Date(a.end_time).getTime());
+
+    if (showClosedAuctions) {
+      return [...active, ...closed];
+    }
+    return active;
+  }, [auctionItems, selectedCategory, showClosedAuctions]);
 
   return (
     <div className="container mx-auto p-8">
@@ -268,23 +283,34 @@ const AuctionPage = () => {
         Üdvözöljük aukciós oldalunkon! Böngésszen termékeink között, és licitáljon, hogy támogassa munkánkat.
       </p>
 
-      {availableCategories.length > 0 && (
-        <div className="flex flex-wrap justify-center gap-2 mb-10">
-          <CustomButton variant={selectedCategory === 'all' ? 'default' : 'outline'} onClick={() => setSelectedCategory('all')} className="rounded-full">Összes</CustomButton>
-          {availableCategories.map(category => (
-            <CustomButton key={category} variant={selectedCategory === category ? 'default' : 'outline'} onClick={() => setSelectedCategory(category)} className="rounded-full">{category}</CustomButton>
-          ))}
+      <div className="flex flex-col items-center gap-4 mb-10">
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="show-closed"
+            checked={showClosedAuctions}
+            onCheckedChange={setShowClosedAuctions}
+          />
+          <Label htmlFor="show-closed">Lezárt aukciók mutatása</Label>
         </div>
-      )}
+        {availableCategories.length > 0 && (
+          <div className="flex flex-wrap justify-center gap-2">
+            <CustomButton variant={selectedCategory === 'all' ? 'default' : 'outline'} onClick={() => setSelectedCategory('all')} className="rounded-full">Összes</CustomButton>
+            {availableCategories.map(category => (
+              <CustomButton key={category} variant={selectedCategory === category ? 'default' : 'outline'} onClick={() => setSelectedCategory(category)} className="rounded-full">{category}</CustomButton>
+            ))}
+          </div>
+        )}
+      </div>
 
-      {filteredAuctions.length > 0 ? (
+      {displayedAuctions.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-10">
-          {filteredAuctions.map((item) => (
+          {displayedAuctions.map((item) => (
             <AuctionCard key={item.id} item={item} onBid={handlePlaceBid} currentUser={currentUser} />
           ))}
         </div>
       ) : (
-        <p className="text-center text-muted-foreground mt-10">{auctionItems.length > 0 ? `Nincsenek aukciók a(z) '${selectedCategory}' kategóriában.` : 'Jelenleg nincsenek aktív aukciók. Nézzen vissza később!'}
+        <p className="text-center text-muted-foreground mt-10">
+          {auctionItems.length > 0 ? `Nincsenek a szűrőfeltételeknek megfelelő aukciók.` : 'Jelenleg nincsenek aktív aukciók. Nézzen vissza később!'}
         </p>
       )}
     </div>
