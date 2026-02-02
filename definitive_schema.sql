@@ -208,14 +208,14 @@ begin
 
   -- Check if it's a buy now purchase
   if current_auction.has_buy_now and current_auction.buy_now_price is not null and bid_amount >= current_auction.buy_now_price then
-    -- Update auction for buy now: close it immediately
+    -- Update auction for buy now: set to payment pending and close it
     update public.auctions
     set 
       current_bid = bid_amount,
       highest_bidder_id = auth.uid(),
-      winner_id = auth.uid(),
-      status = 'Lejárt', -- Close the auction
-      end_time = now()      -- Set end time to now
+      winner_id = auth.uid(), -- The buyer is the winner immediately
+      status = 'Fizetésre vár', -- Set to payment pending
+      end_time = now()      -- Set end time to now to stop countdown
     where id = auction_id_input;
   else
     -- Update auction for a regular bid

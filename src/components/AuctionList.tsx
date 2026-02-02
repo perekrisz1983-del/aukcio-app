@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { List, Edit3, Trash2, MoreVertical, Truck, CheckCircle, PackageCheck, Mail } from "lucide-react";
+import { List, Edit3, Trash2, MoreVertical, Truck, CheckCircle, PackageCheck, Mail, RefreshCw } from "lucide-react";
 import { Auction, AuctionStatus } from "../types";
 import { CustomButton } from "./CustomButton";
 import {
@@ -25,6 +25,7 @@ interface AuctionListProps {
   onEdit: (auction: Auction) => void;
   onDelete: (id: string) => void;
   onStatusChange: (id: string, status: AuctionStatus, trackingNumber?: string) => void;
+  onReactivate: (id: string) => void;
 }
 
 const formatHungarianPrice = (price: number) => {
@@ -38,7 +39,7 @@ const formatDate = (dateString: string) => {
   });
 };
 
-const StatusActions = ({ auction, onStatusChange }: { auction: Auction, onStatusChange: AuctionListProps['onStatusChange'] }) => {
+const StatusActions = ({ auction, onStatusChange, onReactivate }: { auction: Auction, onStatusChange: AuctionListProps['onStatusChange'], onReactivate: AuctionListProps['onReactivate'] }) => {
   const [isTrackingDialogOpen, setIsTrackingDialogOpen] = useState(false);
   const [trackingNumber, setTrackingNumber] = useState("");
 
@@ -62,9 +63,32 @@ const StatusActions = ({ auction, onStatusChange }: { auction: Auction, onStatus
           </DropdownMenuItem>
         )}
         {auction.status === 'Fizetésre vár' && (
-          <DropdownMenuItem onClick={() => onStatusChange(auction.id, 'Fizetve / Postázásra vár')}>
-            <CheckCircle className="mr-2 h-4 w-4" /> Fizetés beérkezett
-          </DropdownMenuItem>
+          <>
+            <DropdownMenuItem onClick={() => onStatusChange(auction.id, 'Fizetve / Postázásra vár')}>
+              <CheckCircle className="mr-2 h-4 w-4" /> Fizetés beérkezett
+            </DropdownMenuItem>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive">
+                  <RefreshCw className="mr-2 h-4 w-4" /> Aukció újraindítása
+                </DropdownMenuItem>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Biztosan újraindítja az aukciót?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Ez a művelet visszaállítja az aukciót 'Aktív' státuszba, a licitet a kezdőárra, és a lejáratot 3 nappal meghosszabbítja. A jelenlegi nyertes törlődik.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Mégse</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => onReactivate(auction.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                    Újraindítás
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </>
         )}
         {auction.status === 'Fizetve / Postázásra vár' && (
           <Dialog open={isTrackingDialogOpen} onOpenChange={setIsTrackingDialogOpen}>
@@ -95,7 +119,7 @@ const StatusActions = ({ auction, onStatusChange }: { auction: Auction, onStatus
   );
 };
 
-export const AuctionList: React.FC<AuctionListProps> = ({ auctions, filter, setFilter, onEdit, onDelete, onStatusChange }) => {
+export const AuctionList: React.FC<AuctionListProps> = ({ auctions, filter, setFilter, onEdit, onDelete, onStatusChange, onReactivate }) => {
   const getStatusBadge = (status: AuctionStatus) => {
     const variants: { [key in AuctionStatus]: string } = {
       'Aktív': 'bg-green-500 text-white',
@@ -148,7 +172,7 @@ export const AuctionList: React.FC<AuctionListProps> = ({ auctions, filter, setF
                     <TableCell>{formatDate(auction.end_time)}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end space-x-1">
-                        <StatusActions auction={auction} onStatusChange={onStatusChange} />
+                        <StatusActions auction={auction} onStatusChange={onStatusChange} onReactivate={onReactivate} />
                         <CustomButton variant="ghost" size="icon" onClick={() => onEdit(auction)}><Edit3 className="h-4 w-4 text-blue-600" /></CustomButton>
                         <AlertDialog>
                           <AlertDialogTrigger asChild><CustomButton variant="ghost" size="icon"><Trash2 className="h-4 w-4 text-red-600" /></CustomButton></AlertDialogTrigger>

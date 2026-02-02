@@ -193,6 +193,32 @@ const Admin = () => {
     }
   };
 
+  const handleReactivateAuction = async (id: string) => {
+    const auction = auctions.find(a => a.id === id);
+    if (!auction) return;
+
+    const newEndTime = new Date();
+    newEndTime.setDate(newEndTime.getDate() + 3); // Extend by 3 days
+
+    const { error } = await supabase
+      .from('auctions')
+      .update({
+        status: 'Aktív',
+        current_bid: auction.starting_price,
+        highest_bidder_id: null,
+        winner_id: null,
+        end_time: newEndTime.toISOString(),
+      })
+      .eq('id', id);
+
+    if (error) {
+      showError(`Hiba az újraindítás során: ${error.message}`);
+    } else {
+      showSuccess("Aukció sikeresen újraindítva!");
+      fetchAuctions();
+    }
+  };
+
   const filteredAuctions = useMemo(() => {
     if (filter === 'all') return auctions;
     const filterMap: { [key: string]: AuctionStatus } = {
@@ -245,6 +271,7 @@ const Admin = () => {
         onEdit={handleStartEdit}
         onDelete={handleDeleteAuction}
         onStatusChange={handleStatusChange}
+        onReactivate={handleReactivateAuction}
       />
     </div>
   );

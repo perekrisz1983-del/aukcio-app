@@ -46,25 +46,13 @@ const AuctionCard = ({ item, onBid, currentUser }: { item: Auction; onBid: (item
   const [bidAmount, setBidAmount] = useState('');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [highestBidderEmail, setHighestBidderEmail] = useState<string | null>(null);
-  const [isClosed, setIsClosed] = useState(new Date() > new Date(item.end_time));
 
+  const isEffectivelyClosed = item.status !== 'Aktív';
   const isWinner = useMemo(() => currentUser?.id === item.winner_id, [currentUser, item.winner_id]);
 
   useEffect(() => {
-    if (!isClosed) {
-      const timeRemaining = new Date(item.end_time).getTime() - Date.now();
-      if (timeRemaining > 0) {
-        const timer = setTimeout(() => setIsClosed(true), timeRemaining);
-        return () => clearTimeout(timer);
-      } else {
-        setIsClosed(true);
-      }
-    }
-  }, [item.end_time, isClosed]);
-
-  useEffect(() => {
     const bidderId = item.winner_id || item.highest_bidder_id;
-    if (isClosed && bidderId) {
+    if (isEffectivelyClosed && bidderId) {
       const fetchHighestBidderEmail = async () => {
         const { data, error } = await supabase.rpc('get_auction_bids', {
           p_auction_id: item.id
@@ -77,7 +65,7 @@ const AuctionCard = ({ item, onBid, currentUser }: { item: Auction; onBid: (item
       };
       fetchHighestBidderEmail();
     }
-  }, [isClosed, item.winner_id, item.highest_bidder_id, item.id]);
+  }, [isEffectivelyClosed, item.winner_id, item.highest_bidder_id, item.id]);
 
   const handlePlaceBid = () => {
     const bidValue = parseInt(bidAmount, 10);
@@ -131,11 +119,17 @@ const AuctionCard = ({ item, onBid, currentUser }: { item: Auction; onBid: (item
       </div>
       <p className="text-muted-foreground mb-4 flex-grow">{item.description}</p>
       
-      {isClosed ? (
+      {isEffectivelyClosed ? (
         <div className="mt-auto">
-          <div className="text-center p-4 border-2 border-red-500 rounded-lg bg-red-50 text-red-700 font-bold">
-            AZ AUKCIÓ LEZÁRULT
-          </div>
+          {item.status === 'Fizetésre vár' ? (
+            <div className="text-center p-4 border-2 border-yellow-500 rounded-lg bg-yellow-50 text-yellow-700 font-bold">
+              FIZETÉSRE VÁR
+            </div>
+          ) : (
+            <div className="text-center p-4 border-2 border-red-500 rounded-lg bg-red-50 text-red-700 font-bold">
+              AZ AUKCIÓ LEZÁRULT
+            </div>
+          )}
           {item.highest_bidder_id ? (
             <div className="text-center mt-4">
               <p>Nyertes: <span className="font-semibold">{highestBidderEmail ? maskEmail(highestBidderEmail) : 'Betöltés...'}</span></p>
@@ -247,6 +241,9 @@ const AuctionPage = () => {
       return;
     }
 
+    const item = auctionItems.find(i => i.id === itemId);
+    if (!item) return;
+
     const { error } = await supabase.rpc('place_bid', {
       auction_id_input: itemId,
       bid_amount: bidValue,
@@ -256,6 +253,19 @@ const AuctionPage = () => {
       showError(`Sikertelen licit: ${error.message}`);
     } else {
       showSuccess(`Sikeres licit: ${formatHungarianPrice(bidValue)}!`);
+      if (item.has_buy_now && item.buy_now_price && bidValue >= item.buy_now_price) {
+        showSuccess("Villámáras vásárlás sikeres! Hamarosan emailt küldünk a részletekkel.");
+        fetch('/api/send-winner-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            to: user.email,
+            itemName: item.title,
+            winningBid: item.buy_now_price,
+            auctionIdHuman: item.auction_id_human,
+          }),
+        }).catch(err => console.error("Failed to send buy-now winner email:", err));
+      }
     }
   };
 
