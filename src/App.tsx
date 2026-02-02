@@ -18,6 +18,8 @@ import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
 import SuccessStoriesPage from "./pages/SuccessStories";
 import FaqPage from "./pages/Faq";
+import ForgotPasswordPage from "./pages/ForgotPassword";
+import UpdatePasswordPage from "./pages/UpdatePassword";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +45,8 @@ const App = () => (
               <Route path="/admin/animals" element={<AdminAnimals />} />
               <Route path="/profil" element={<Profil />} />
               <Route path="/auth" element={<AuthPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/update-password" element={<UpdatePasswordPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>

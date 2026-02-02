@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { supabase } from '@/lib/supabase';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { showError, showSuccess } from '@/utils/toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -104,7 +104,12 @@ const AuthPage = () => {
                   )} />
                   <FormField control={loginForm.control} name="password" render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Jelszó</FormLabel>
+                      <div className="flex items-center justify-between">
+                        <FormLabel>Jelszó</FormLabel>
+                        <Link to="/forgot-password" className="text-sm font-medium text-primary hover:underline">
+                          Elfelejtett jelszó?
+                        </Link>
+                      </div>
                       <FormControl><Input type="password" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
