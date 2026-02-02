@@ -50,6 +50,9 @@ const AuctionCard = ({ item, onBid, currentUser }: { item: Auction; onBid: (item
   const isEffectivelyClosed = item.status !== 'Aktív';
   const isWinner = useMemo(() => currentUser?.id === item.winner_id, [currentUser, item.winner_id]);
 
+  const soldStatuses: Auction['status'][] = ['Fizetésre vár', 'payment_pending', 'Fizetve / Postázásra vár', 'Postázva', 'Lezárt / Teljesült'];
+  const isSold = soldStatuses.includes(item.status) || !!item.winner_id;
+
   useEffect(() => {
     const bidderId = item.winner_id || item.highest_bidder_id;
     if (isEffectivelyClosed && bidderId) {
@@ -121,7 +124,7 @@ const AuctionCard = ({ item, onBid, currentUser }: { item: Auction; onBid: (item
       
       {isEffectivelyClosed ? (
         <div className="mt-auto">
-          {item.winner_id ? (
+          {isSold ? (
             <div className="text-center p-4 border-2 border-blue-500 rounded-lg bg-blue-50 text-blue-700 font-bold">
               ELKELT
             </div>
@@ -130,7 +133,7 @@ const AuctionCard = ({ item, onBid, currentUser }: { item: Auction; onBid: (item
               LEZÁRULT
             </div>
           )}
-          {item.winner_id ? (
+          {isSold ? (
             <div className="text-center mt-4">
               <p>Nyertes: <span className="font-semibold">{highestBidderEmail ? maskEmail(highestBidderEmail) : 'Betöltés...'}</span></p>
               <p>Nyertes licit: <span className="font-semibold">{formatHungarianPrice(item.current_bid)}</span></p>
