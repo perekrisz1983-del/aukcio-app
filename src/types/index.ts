@@ -1,4 +1,4 @@
-export type AuctionStatus = 'Tervezett' | 'Aktív' | 'Lejárt' | 'Fizetésre vár' | 'Fizetve / Postázásra vár' | 'Postázva' | 'Lezárt / Teljesült';
+export type AuctionStatus = 'Tervezett' | 'Aktív' | 'Lejárt' | 'Fizetésre vár' | 'payment_pending' | 'Fizetve / Postázásra vár' | 'Postázva' | 'Lezárt / Teljesült';
 
 export interface Auction {
   id: string; // uuid

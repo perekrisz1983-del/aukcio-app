@@ -201,7 +201,7 @@ const AuctionPage = () => {
     const { data, error } = await supabase
       .from('auctions')
       .select('*')
-      .in('status', ['Aktív', 'Lejárt', 'Fizetésre vár', 'Fizetve / Postázásra vár', 'Postázva', 'Lezárt / Teljesült'])
+      .in('status', ['Aktív', 'Lejárt', 'Fizetésre vár', 'payment_pending', 'Fizetve / Postázásra vár', 'Postázva', 'Lezárt / Teljesült'])
       .order('end_time', { ascending: true });
     
     if (error) {
@@ -259,7 +259,7 @@ const AuctionPage = () => {
         setAuctionItems(prevItems => 
             prevItems.map(prevItem => 
                 prevItem.id === itemId 
-                ? { ...prevItem, status: 'Fizetésre vár', winner_id: user.id, current_bid: bidValue } 
+                ? { ...prevItem, status: 'payment_pending', winner_id: user.id, current_bid: bidValue } 
                 : prevItem
             )
         );
