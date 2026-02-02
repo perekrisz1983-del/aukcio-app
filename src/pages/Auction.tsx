@@ -253,7 +253,17 @@ const AuctionPage = () => {
       showError(`Sikertelen licit: ${error.message}`);
     } else {
       showSuccess(`Sikeres licit: ${formatHungarianPrice(bidValue)}!`);
+      
+      // Optimistic UI update for buy now
       if (item.has_buy_now && item.buy_now_price && bidValue >= item.buy_now_price) {
+        setAuctionItems(prevItems => 
+            prevItems.map(prevItem => 
+                prevItem.id === itemId 
+                ? { ...prevItem, status: 'Fizetésre vár', winner_id: user.id, current_bid: bidValue } 
+                : prevItem
+            )
+        );
+        
         showSuccess("Villámáras vásárlás sikeres! Hamarosan emailt küldünk a részletekkel.");
         fetch('/api/send-winner-email', {
           method: 'POST',
@@ -275,6 +285,15 @@ const AuctionPage = () => {
             console.error("Failed to send buy-now winner email:", err);
             showError(`Hiba a megerősítő email küldésekor: ${err.message}`);
         });
+      } else {
+        // Optimistic UI update for regular bids
+        setAuctionItems(prevItems => 
+            prevItems.map(prevItem => 
+                prevItem.id === itemId 
+                ? { ...prevItem, current_bid: bidValue, highest_bidder_id: user.id } 
+                : prevItem
+            )
+        );
       }
     }
   };
