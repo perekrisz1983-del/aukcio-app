@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { User } from "@supabase/supabase-js";
+import { showError } from "@/utils/toast";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -30,56 +31,55 @@ const Navbar = () => {
   };
 
   useEffect(() => {
-    const checkAdminRole = async (user: User | null) => {
-      if (!user) {
-        setIsAdmin(false);
-        return;
-      }
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
-      if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found
-        console.error("Error checking admin role:", error);
-        setIsAdmin(false);
-      } else {
-        setIsAdmin(profile?.role === 'admin');
-      }
-    };
-
-    const handleAuthChange = async (session: any) => {
-      setLoading(true);
-      const currentUser = session?.user || null;
-      setUser(currentUser);
-      await checkAdminRole(currentUser);
+    // Set a timeout to prevent the loading state from getting stuck.
+    const timer = setTimeout(() => {
       setLoading(false);
-    };
+    }, 1000);
 
+    // Check the initial session.
     supabase.auth.getSession().then(({ data: { session } }) => {
-      handleAuthChange(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+      clearTimeout(timer);
     });
 
+    // Listen for auth state changes.
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (_event, session) => {
-        handleAuthChange(session);
+        setUser(session?.user ?? null);
+        setLoading(false); // Ensure loading is false on any auth change.
       }
     );
 
     return () => {
+      clearTimeout(timer);
       authListener.subscription.unsubscribe();
     };
   }, []);
 
+  useEffect(() => {
+    const checkAdminRole = async () => {
+      if (!user) {
+        setIsAdmin(false);
+        return;
+      }
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+      
+      setIsAdmin(profile?.role === 'admin');
+    };
+
+    checkAdminRole();
+  }, [user]);
+
   const handleSignOut = async () => {
-    setLoading(true);
     const { error } = await supabase.auth.signOut();
     if (error) {
-      console.error("Hiba a kijelentkezés során:", error.message);
-      alert("Hiba a kijelentkezés során: " + error.message);
+      showError(`Hiba a kijelentkezés során: ${error.message}`);
     }
-    setLoading(false);
   };
 
   const renderAuthButtons = () => {
