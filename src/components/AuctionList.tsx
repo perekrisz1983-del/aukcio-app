@@ -19,13 +19,17 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 
 interface AuctionListProps {
-  auctions: Auction[];
+  auctions: Partial<Auction>[];
   filter: string;
   setFilter: (filter: string) => void;
-  onEdit: (auction: Auction) => void;
+  onEdit: (auction: Partial<Auction>) => void;
   onDelete: (id: string) => void;
   onStatusChange: (id: string, status: AuctionStatus, trackingNumber?: string) => void;
   onReactivate: (id: string) => void;
+  currentPage: number;
+  totalPages: number;
+  onNextPage: () => void;
+  onPrevPage: () => void;
 }
 
 const formatHungarianPrice = (price: number) => {
@@ -39,12 +43,12 @@ const formatDate = (dateString: string) => {
   });
 };
 
-const StatusActions = ({ auction, onStatusChange, onReactivate }: { auction: Auction, onStatusChange: AuctionListProps['onStatusChange'], onReactivate: AuctionListProps['onReactivate'] }) => {
+const StatusActions = ({ auction, onStatusChange, onReactivate }: { auction: Partial<Auction>, onStatusChange: AuctionListProps['onStatusChange'], onReactivate: AuctionListProps['onReactivate'] }) => {
   const [isTrackingDialogOpen, setIsTrackingDialogOpen] = useState(false);
   const [trackingNumber, setTrackingNumber] = useState("");
 
   const handleShip = () => {
-    onStatusChange(auction.id, 'Postázva', trackingNumber);
+    onStatusChange(auction.id!, 'Postázva', trackingNumber);
     setIsTrackingDialogOpen(false);
     setTrackingNumber("");
   };
@@ -60,13 +64,13 @@ const StatusActions = ({ auction, onStatusChange, onReactivate }: { auction: Auc
         <DropdownMenuLabel>Státusz váltása</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {(auction.status === 'Aktív' || auction.status === 'Lejárt') && auction.winner_id && (
-          <DropdownMenuItem onClick={() => onStatusChange(auction.id, 'Fizetésre vár')}>
+          <DropdownMenuItem onClick={() => onStatusChange(auction.id!, 'Fizetésre vár')}>
             <Mail className="mr-2 h-4 w-4" /> Nyertes értesítése
           </DropdownMenuItem>
         )}
         {isPendingPayment && (
           <>
-            <DropdownMenuItem onClick={() => onStatusChange(auction.id, 'Fizetve / Postázásra vár')}>
+            <DropdownMenuItem onClick={() => onStatusChange(auction.id!, 'Fizetve / Postázásra vár')}>
               <CheckCircle className="mr-2 h-4 w-4" /> Fizetés beérkezett
             </DropdownMenuItem>
             <AlertDialog>
@@ -84,7 +88,7 @@ const StatusActions = ({ auction, onStatusChange, onReactivate }: { auction: Auc
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Mégse</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => onReactivate(auction.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                  <AlertDialogAction onClick={() => onReactivate(auction.id!)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                     Újraindítás
                   </AlertDialogAction>
                 </AlertDialogFooter>
@@ -112,7 +116,7 @@ const StatusActions = ({ auction, onStatusChange, onReactivate }: { auction: Auc
           </Dialog>
         )}
         {auction.status === 'Postázva' && (
-          <DropdownMenuItem onClick={() => onStatusChange(auction.id, 'Lezárt / Teljesült')}>
+          <DropdownMenuItem onClick={() => onStatusChange(auction.id!, 'Lezárt / Teljesült')}>
             <PackageCheck className="mr-2 h-4 w-4" /> Aukció lezárása
           </DropdownMenuItem>
         )}
@@ -121,7 +125,7 @@ const StatusActions = ({ auction, onStatusChange, onReactivate }: { auction: Auc
   );
 };
 
-export const AuctionList: React.FC<AuctionListProps> = ({ auctions, filter, setFilter, onEdit, onDelete, onStatusChange, onReactivate }) => {
+export const AuctionList: React.FC<AuctionListProps> = ({ auctions, filter, setFilter, onEdit, onDelete, onStatusChange, onReactivate, currentPage, totalPages, onNextPage, onPrevPage }) => {
   const getStatusBadge = (status: AuctionStatus | string) => {
     const isPending = status === 'Fizetésre vár' || status === 'payment_pending';
     const statusText = isPending ? 'Fizetésre vár' : status;
@@ -171,11 +175,11 @@ export const AuctionList: React.FC<AuctionListProps> = ({ auctions, filter, setF
               {auctions.length > 0 ? (
                 auctions.map((auction) => (
                   <TableRow key={auction.id}>
-                    <TableCell className="font-mono text-xs">{auction.auction_id_human}</TableCell>
-                    <TableCell className="font-medium">{auction.title}</TableCell>
-                    <TableCell>{getStatusBadge(auction.status)}</TableCell>
-                    <TableCell>{formatHungarianPrice(auction.current_bid)}</TableCell>
-                    <TableCell>{formatDate(auction.end_time)}</TableCell>
+                    <TableCell className="font-mono text-xs">{auction.auction_id_human ?? 'N/A'}</TableCell>
+                    <TableCell className="font-medium">{auction.title ?? 'Cím nélkül'}</TableCell>
+                    <TableCell>{getStatusBadge(auction.status ?? 'Ismeretlen')}</TableCell>
+                    <TableCell>{formatHungarianPrice(auction.current_bid ?? 0)}</TableCell>
+                    <TableCell>{formatDate(auction.end_time ?? '')}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end space-x-1">
                         <StatusActions auction={auction} onStatusChange={onStatusChange} onReactivate={onReactivate} />
@@ -184,7 +188,7 @@ export const AuctionList: React.FC<AuctionListProps> = ({ auctions, filter, setF
                           <AlertDialogTrigger asChild><CustomButton variant="ghost" size="icon"><Trash2 className="h-4 w-4 text-red-600" /></CustomButton></AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader><AlertDialogTitle>Biztosan törli ezt az aukciót?</AlertDialogTitle><AlertDialogDescription>A "{auction.title}" című aukció véglegesen törlődni fog.</AlertDialogDescription></AlertDialogHeader>
-                            <AlertDialogFooter><AlertDialogCancel>Mégse</AlertDialogCancel><AlertDialogAction onClick={() => onDelete(auction.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Törlés</AlertDialogAction></AlertDialogFooter>
+                            <AlertDialogFooter><AlertDialogCancel>Mégse</AlertDialogCancel><AlertDialogAction onClick={() => onDelete(auction.id!)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Törlés</AlertDialogAction></AlertDialogFooter>
                           </AlertDialogContent>
                         </AlertDialog>
                       </div>
@@ -196,6 +200,27 @@ export const AuctionList: React.FC<AuctionListProps> = ({ auctions, filter, setF
               )}
             </TableBody>
           </Table>
+        </div>
+        <div className="flex items-center justify-end space-x-2 py-4">
+          <span className="text-sm text-muted-foreground">
+            Oldal {currentPage + 1} / {totalPages > 0 ? totalPages : 1}
+          </span>
+          <CustomButton
+            variant="outline"
+            size="sm"
+            onClick={onPrevPage}
+            disabled={currentPage === 0}
+          >
+            Előző
+          </CustomButton>
+          <CustomButton
+            variant="outline"
+            size="sm"
+            onClick={onNextPage}
+            disabled={currentPage >= totalPages - 1}
+          >
+            Következő
+          </CustomButton>
         </div>
       </CardContent>
     </Card>

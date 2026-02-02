@@ -13,7 +13,7 @@ import { CustomButton } from "@/components/CustomButton";
 import { PawPrint } from "lucide-react";
 
 const Admin = () => {
-  const [auctions, setAuctions] = useState<Auction[]>([]);
+  const [auctions, setAuctions] = useState<Partial<Auction>[]>([]);
   const [categories, setCategories] = useState<string[]>(['Elektronika', 'Lakástextil', 'Cipő', 'Ruha', 'Kozmetikum', 'Plüss']);
   const [filter, setFilter] = useState('all');
   const [editingAuction, setEditingAuction] = useState<Auction | null>(null);
@@ -21,6 +21,9 @@ const Admin = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const [currentPage, setCurrentPage] = useState(0);
+  const [itemsPerPage] = useState(20);
+  const [totalAuctions, setTotalAuctions] = useState(0);
 
   useEffect(() => {
     const checkAdminStatus = async () => {
@@ -52,18 +55,32 @@ const Admin = () => {
   }, [navigate]);
 
   const fetchAuctions = useCallback(async () => {
+    const from = currentPage * itemsPerPage;
+    const to = from + itemsPerPage - 1;
+
+    const { count, error: countError } = await supabase
+      .from('auctions')
+      .select('*', { count: 'exact', head: true });
+
+    if (countError) {
+      showError("Hiba az aukciók számának lekérdezésekor: " + countError.message);
+    } else {
+      setTotalAuctions(count || 0);
+    }
+
     const { data, error } = await supabase
       .from('auctions')
-      .select('*')
-      .order('created_at', { ascending: false });
+      .select('id, auction_id_human, title, status, current_bid, end_time, winner_id, starting_price')
+      .order('created_at', { ascending: false })
+      .range(from, to);
 
     if (error) {
       showError("Hiba az aukciók betöltésekor: " + error.message);
       setAuctions([]);
     } else {
-      setAuctions(data as Auction[]);
+      setAuctions(data as Partial<Auction>[]);
     }
-  }, []);
+  }, [currentPage, itemsPerPage]);
 
   useEffect(() => {
     if (user) {
@@ -122,9 +139,23 @@ const Admin = () => {
     }
   };
 
-  const handleStartEdit = (auction: Auction) => {
-    setEditingAuction(auction);
-    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const handleStartEdit = async (auction: Partial<Auction>) => {
+    if (!auction.id) {
+      showError("A szerkesztéshez aukció azonosító szükséges.");
+      return;
+    }
+    const { data, error } = await supabase
+      .from('auctions')
+      .select('*')
+      .eq('id', auction.id)
+      .single();
+
+    if (error) {
+      showError(`Hiba az aukció adatainak betöltésekor: ${error.message}`);
+    } else {
+      setEditingAuction(data as Auction);
+      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   };
 
   const handleCancelEdit = () => {
@@ -195,7 +226,10 @@ const Admin = () => {
 
   const handleReactivateAuction = async (id: string) => {
     const auction = auctions.find(a => a.id === id);
-    if (!auction) return;
+    if (!auction || typeof auction.starting_price === 'undefined') {
+      showError("Hiba: Az aukció adatai hiányosak az újraindításhoz.");
+      return;
+    }
 
     const newEndTime = new Date();
     newEndTime.setDate(newEndTime.getDate() + 3); // Extend by 3 days
@@ -237,6 +271,20 @@ const Admin = () => {
     return auctions.filter(auction => auction.status === filterMap[filter]);
   }, [auctions, filter]);
 
+  const totalPages = Math.ceil(totalAuctions / itemsPerPage);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages - 1) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 0) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto p-8 text-center">
@@ -276,6 +324,10 @@ const Admin = () => {
         onDelete={handleDeleteAuction}
         onStatusChange={handleStatusChange}
         onReactivate={handleReactivateAuction}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onNextPage={handleNextPage}
+        onPrevPage={handlePrevPage}
       />
     </div>
   );
