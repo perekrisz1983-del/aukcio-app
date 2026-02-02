@@ -77,6 +77,7 @@ const Admin = () => {
       start_time: new Date(formData.start_time).toISOString(),
       end_time: new Date(formData.end_time).toISOString(),
       has_buy_now: formData.has_buy_now === "igen",
+      buy_now_price: formData.has_buy_now === "igen" ? formData.buy_now_price : null,
     };
 
     if (editingAuction) {

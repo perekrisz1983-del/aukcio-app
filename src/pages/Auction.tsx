@@ -12,6 +12,17 @@ import { Auction } from "../types";
 import { showError, showSuccess } from "@/utils/toast";
 import BidHistory from "@/components/BidHistory";
 import { User } from "@supabase/supabase-js";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const formatHungarianPrice = (price: number) => {
   return new Intl.NumberFormat("hu-HU", {
@@ -151,6 +162,30 @@ const AuctionCard = ({ item, onBid, currentUser }: { item: Auction; onBid: (item
           <div className="flex flex-col space-y-2">
             <Input type="number" placeholder={`Minimum licit: ${formatHungarianPrice(item.current_bid + item.bid_increment)}`} value={bidAmount} onChange={(e) => setBidAmount(e.target.value)} className="w-full" />
             <CustomButton onClick={handlePlaceBid} className="w-full text-primary-foreground bg-gradient-to-br from-primary to-red-700 hover:from-red-700 hover:to-red-800 shadow-lg shadow-red-500/20">Licitálás</CustomButton>
+            
+            {item.has_buy_now && item.buy_now_price && item.current_bid < item.buy_now_price && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <CustomButton variant="outline" className="w-full mt-2 border-primary text-primary hover:bg-primary/10 hover:text-primary font-bold">
+                    Villámár: {formatHungarianPrice(item.buy_now_price)}
+                  </CustomButton>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Vásárlás megerősítése</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Biztosan megvásárolja a(z) "{item.title}" terméket villámáron, {formatHungarianPrice(item.buy_now_price)} összegért? Ezzel az aukció azonnal lezárul, és Ön lesz a nyertes.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Mégse</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => onBid(item.id, item.buy_now_price!)}>
+                      Vásárlás
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
           </div>
         </>
       )}
