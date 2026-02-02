@@ -264,7 +264,17 @@ const AuctionPage = () => {
             winningBid: item.buy_now_price,
             auctionIdHuman: item.auction_id_human,
           }),
-        }).catch(err => console.error("Failed to send buy-now winner email:", err));
+        })
+        .then(async (res) => {
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({ error: 'Ismeretlen hiba' }));
+                throw new Error(errorData.error || 'Hiba az email küldésekor.');
+            }
+        })
+        .catch(err => {
+            console.error("Failed to send buy-now winner email:", err);
+            showError(`Hiba a megerősítő email küldésekor: ${err.message}`);
+        });
       }
     }
   };
